@@ -6,7 +6,7 @@ import androidx.room.*
 data class Task(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
-    val description: String,
+    val priority: Int = 0,
     val isCompleted: Boolean = false,
     val dueDateMillis: Long? = null //  store due date as epoch millis
 )

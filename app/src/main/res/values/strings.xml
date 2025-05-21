@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">ToDoApp</string>
+    <string name="add_task_title">Thêm Task Mới</string>
+    <string name="add_task_subtitle">Vui lòng điền thông tin task cần thêm</string>
+    <string name="task_title_label">Tiêu đề task:</string>
+    <string name="task_title_hint">Nhập tiêu đề task</string>
+    <string name="priority_label">Mức độ ưu tiên:</string>
+    <string name="due_date_label">Ngày hạn (tùy chọn):</string>
+    <string name="select_date_button">Chọn ngày</string>
+    <string name="no_due_date">Chưa có ngày hạn</string>
+    <string name="save_task_button">Lưu Task</string>
+    <string name="cancel_button">Hủy</string>
 </resources>
