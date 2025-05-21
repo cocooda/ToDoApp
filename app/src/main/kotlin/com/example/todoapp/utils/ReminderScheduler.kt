@@ -7,9 +7,9 @@ import com.example.todoapp.worker.ReminderWorker
 import java.util.concurrent.TimeUnit
 
 object ReminderScheduler {
-    fun scheduleReminder(context: Context, delayMinutes: Long) {
+    fun scheduleReminder(context: Context, delayMillis: Long) {
         val request = OneTimeWorkRequestBuilder<ReminderWorker>()
-            .setInitialDelay(delayMinutes, TimeUnit.MINUTES)
+            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
             .build()
 
         WorkManager.getInstance(context).enqueue(request)
