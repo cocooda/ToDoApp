@@ -8,6 +8,6 @@ data class Task(
     val title: String,
     val priority: Int = 0, //0=Low, 1=Medium, 2=High
     val isCompleted: Boolean = false,
-    val dueDateMillis: Long? = null //  store due date as epoch millis
+    val dueDate: Long? = null //  store due date as epoch millis
 )
 

@@ -35,14 +35,18 @@ class TaskViewModel @Inject constructor(
 
     fun getTasksByPriority(priority: Int): StateFlow<List<Task>> {
         return repository.getTasksByPriority(priority)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
     }
 
     fun insert(task: Task, context: Context) {
         viewModelScope.launch {
             repository.insert(task)
 
-            task.dueDateMillis?.let { dueMillis ->
+            task.dueDate?.let { dueMillis ->
                 val delayMillis = dueMillis - System.currentTimeMillis()
                 if (delayMillis > 0) {
                     ReminderScheduler.scheduleReminder(context, delayMillis)
@@ -54,7 +58,7 @@ class TaskViewModel @Inject constructor(
     fun update(task: Task, context: Context) {
         viewModelScope.launch {
             repository.update(task)
-            task.dueDateMillis?.let { dueMillis ->
+            task.dueDate?.let { dueMillis ->
                 val delayMillis = dueMillis - System.currentTimeMillis()
                 if (delayMillis > 0) {
                     ReminderScheduler.scheduleReminder(context, delayMillis)

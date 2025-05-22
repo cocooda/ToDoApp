@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.todoapp.R
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,9 +34,9 @@ class TaskAdapter(private val taskList: List<Task>) :
         if (task.dueDate != null) {
             val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             val dateString = sdf.format(Date(task.dueDate))
-            holder.tvDueDate.text = "Due: $dateString"
+            holder.tvDueDate.text = holder.itemView.context.getString(R.string.due_label, dateString)
         } else {
-            holder.tvDueDate.text = "No due date"
+            holder.tvDueDate.text = holder.itemView.context.getString(R.string.due_no_date)
         }
 
         // Show priority as text

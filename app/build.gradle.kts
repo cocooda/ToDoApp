@@ -55,7 +55,9 @@ dependencies {
     // Room Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.common.jvm)
-    implementation(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.compiler){
+        exclude(group = "com.intellij", module = "annotations")
+    }
     implementation(libs.work.runtime.ktx)
     ksp(libs.androidx.room.compiler)
 
@@ -76,7 +78,7 @@ dependencies {
     ksp(libs.hilt.android.compiler)
 
    // RecyclerView
-    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.recyclerview.v140)
     implementation(libs.androidx.constraintlayout)
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation(libs.androidx.appcompat)
 }
