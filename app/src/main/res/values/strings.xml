@@ -19,6 +19,7 @@
     <string name="task_updated">Task updated</string>
     <string name="task_not_found">Task not found</string>
     <string name="list_of_tasks">List of tasks</string>
+    <string name="add_task_button">Thêm công việc</string>
     <string-array name="priority_array">
         <item>Low</item>
         <item>Medium</item>
