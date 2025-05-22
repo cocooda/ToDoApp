@@ -1,17 +1,18 @@
 package com.example.todoapp.ui.common
 
-import com.example.todoapp.data.model.Task
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoapp.R
+import com.example.todoapp.data.model.Task
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TaskAdapter(private val taskList: List<Task>) :
-    RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+class TaskAdapter : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DiffCallback()) {
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
@@ -26,28 +27,27 @@ class TaskAdapter(private val taskList: List<Task>) :
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        val task = taskList[position]
-
+        val task = getItem(position)
+        val context = holder.itemView.context
         holder.tvTitle.text = task.title
 
-        // Format the due date (if it exists)
         if (task.dueDate != null) {
             val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val dateString = sdf.format(Date(task.dueDate))
-            holder.tvDueDate.text = holder.itemView.context.getString(R.string.due_label, dateString)
+            holder.tvDueDate.text = context.getString(R.string.due_label, sdf.format(Date(task.dueDate)))
         } else {
-            holder.tvDueDate.text = holder.itemView.context.getString(R.string.due_no_date)
+            holder.tvDueDate.text = context.getString(R.string.due_no_date)
         }
 
-        // Show priority as text
-        val priorityText = when (task.priority) {
+        holder.tvPriority.text = when (task.priority) {
             0 -> "Priority: Low"
             1 -> "Priority: Medium"
             2 -> "Priority: High"
             else -> "Priority: Unknown"
         }
-        holder.tvPriority.text = priorityText
     }
 
-    override fun getItemCount(): Int = taskList.size
+    class DiffCallback : DiffUtil.ItemCallback<Task>() {
+        override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Task, newItem: Task): Boolean = oldItem == newItem
+    }
 }
