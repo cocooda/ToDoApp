@@ -54,6 +54,28 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    class MainActivity : AppCompatActivity() {
+
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var taskAdapter: TaskAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // Sample tasks
+        val sampleTasks = listOf(
+            Task(id = 1, title = "Do homework", priority = 2, dueDate = System.currentTimeMillis(), isCompleted = false),
+            Task(id = 2, title = "Buy groceries", priority = 1, dueDate = null, isCompleted = false),
+            Task(id = 3, title = "Read a book", priority = 0, dueDate = System.currentTimeMillis(), isCompleted = true)
+        )
+
+        taskAdapter = TaskAdapter(sampleTasks)
+        recyclerView.adapter = taskAdapter
+    }
 
     private fun checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
