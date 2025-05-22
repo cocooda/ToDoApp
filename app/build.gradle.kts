@@ -81,4 +81,8 @@ dependencies {
     implementation(libs.androidx.recyclerview.v140)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.appcompat)
+
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 }
