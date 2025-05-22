@@ -74,4 +74,9 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
+
+   // RecyclerView
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.constraintlayout)
+    implementation("androidx.appcompat:appcompat:1.6.1")
 }
