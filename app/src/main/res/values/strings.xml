@@ -10,4 +10,18 @@
     <string name="no_due_date">Chưa có ngày hạn</string>
     <string name="save_task_button">Lưu Task</string>
     <string name="cancel_button">Hủy</string>
+    <string name="add_task">Add Task</string>
+    <string name="update_task">Update Task</string>
+    <string name="due_no_date">No due date</string>
+    <string name="due_label">Due: %1$s</string>
+    <string name="please_enter_task_title">Please enter a task title</string>
+    <string name="task_added">Task added</string>
+    <string name="task_updated">Task updated</string>
+    <string name="task_not_found">Task not found</string>
+    <string-array name="priority_array">
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+    </string-array>
+
 </resources>

@@ -27,7 +27,8 @@ class TaskRepository @Inject constructor(
         return taskDao.getAllTasks()
     }
 
-    suspend fun getTaskById(id: Int): Task? {
-        return taskDao.getTaskById(id)
-    }
+    fun getTaskById(id: Int): Flow<Task> = taskDao.getTaskById(id)
+
+
+    suspend fun getTasksByPriority(priority: Int): List<Task>
 }

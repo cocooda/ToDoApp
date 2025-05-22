@@ -2,6 +2,7 @@ package com.example.todoapp.data.db
 
 import androidx.room.*
 import com.example.todoapp.data.model.Task
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
@@ -16,9 +17,13 @@ interface TaskDao {
     suspend fun delete(task: Task)
 
     @Query("SELECT * FROM task_table ORDER BY id ASC")
-    fun getAllTasks(): kotlinx.coroutines.flow.Flow<List<Task>> // Changed to Flow
+    fun getAllTasks(): Flow<List<Task>> // Changed to Flow
 
-    @Query("SELECT * FROM task_table WHERE id = :taskId")
-    suspend fun getTaskById(taskId: Int): Task?
+    @Query("SELECT * FROM task_table WHERE id = :id")
+    fun getTaskById(id: Int): Flow<Task>
+
+    @Query("SELECT * FROM task_table WHERE priority = :priority ORDER BY dueDateMillis ASC")
+    suspend fun getTasksByPriority(priority: Int): List<Task>
+
 }
 
