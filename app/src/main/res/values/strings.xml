@@ -20,6 +20,10 @@
     <string name="task_not_found">Task not found</string>
     <string name="list_of_tasks">List of tasks</string>
     <string name="add_task_button">Thêm công việc</string>
+    <string name="search_your_name">Search your name</string>
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="high">High</string>
     <string-array name="priority_array">
         <item>Low</item>
         <item>Medium</item>

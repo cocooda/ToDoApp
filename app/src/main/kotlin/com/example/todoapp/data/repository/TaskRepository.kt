@@ -1,4 +1,4 @@
-package com.example.todoapp.repository
+package com.example.todoapp.data.repository
 
 import com.example.todoapp.data.db.TaskDao
 import com.example.todoapp.data.model.Task

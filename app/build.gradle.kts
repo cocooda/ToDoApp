@@ -3,7 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android") version "2.44" apply false
+    id("kotlin-kapt")
+    id ("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -85,4 +86,9 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+
+    //sdp ssp
+    implementation(libs.sdp.android)
+    implementation(libs.ssp.android)
+
 }

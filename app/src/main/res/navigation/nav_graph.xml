@@ -16,9 +16,12 @@
     <fragment
         android:id="@+id/addEditFragment"
         android:name="com.example.todoapp.ui.addedit.AddEditTaskFragment"
-        android:label="Add/Edit Task" />
-    <argument
-        android:name="taskId"
-        app:argType="integer"
-        android:defaultValue="-1"/>
+        android:label="Add/Edit Task">
+        <!-- Argument đặt đúng chỗ ở đây -->
+        <argument
+            android:name="taskId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+    </fragment>
+
 </navigation>

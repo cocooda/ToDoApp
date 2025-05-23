@@ -10,6 +10,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="16dp"
+        android:background="@color/white"
         android:contentDescription="@string/list_of_tasks"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

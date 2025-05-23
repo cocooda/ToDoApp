@@ -5,14 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.data.model.Task
 import com.example.todoapp.utils.ReminderScheduler
-import com.example.todoapp.repository.TaskRepository
+import com.example.todoapp.data.repository.TaskRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
-@HiltViewModel
-class TaskViewModel @Inject constructor(
+class TaskViewModel(
     private val repository: TaskRepository
 ) : ViewModel() {
 
