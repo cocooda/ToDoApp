@@ -6,8 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
-class TaskRepository @Inject constructor(
+class TaskRepository (
     private val taskDao: TaskDao
 ) {
 
@@ -27,7 +26,7 @@ class TaskRepository @Inject constructor(
         return taskDao.getAllTasks()
     }
 
-    fun getTaskById(id: Int): Flow<Task> = taskDao.getTaskById(id)
+    suspend fun getTaskByIdOnce(id: Int): Task? = taskDao.getTaskByIdOnce(id)
 
 
     fun getTasksByPriority(priority: Int): Flow<List<Task>> {

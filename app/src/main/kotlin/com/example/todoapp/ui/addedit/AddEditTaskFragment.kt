@@ -1,6 +1,5 @@
 package com.example.todoapp.ui.addedit
 
-import com.example.todoapp.R
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,69 +8,68 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.todoapp.databinding.FragmentAddEditTaskBinding
+import androidx.navigation.fragment.navArgs
+import com.example.todoapp.R
 import com.example.todoapp.data.model.Task
+import com.example.todoapp.data.repository.TaskRepository
+import com.example.todoapp.data.repository.TaskViewModelFactory
+import com.example.todoapp.databinding.FragmentAddEditTaskBinding
+import com.example.todoapp.di.AppDatabaseProvider
 import com.example.todoapp.viewmodel.TaskViewModel
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-@AndroidEntryPoint
 class AddEditTaskFragment : Fragment() {
 
     private var _binding: FragmentAddEditTaskBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: TaskViewModel by viewModels()
+    private lateinit var viewModel: TaskViewModel
 
     private var selectedDueDate: Long? = null
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-
-    // New: Store current Task if editing
     private var currentTask: Task? = null
 
-    // New: Argument key for taskId
-    companion object {
-        const val ARG_TASK_ID = "task_id"
-    }
+    // Safe Args property
+    private val args: AddEditTaskFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?,
+        savedInstanceState: Bundle?
     ): View {
         _binding = FragmentAddEditTaskBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupViewModel()
         setupPrioritySpinner()
 
-        // Check if we got a task ID (Edit mode)
-        val taskId = arguments?.getInt(ARG_TASK_ID, -1) ?: -1
+        val taskId = args.taskId
         if (taskId != -1) {
             loadTask(taskId)
             binding.btnSaveTask.text = getString(R.string.update_task)
-
         } else {
             binding.btnSaveTask.text = getString(R.string.add_task)
         }
 
-        binding.btnSelectDate.setOnClickListener {
-            showDatePickerDialog()
-        }
+        binding.btnSelectDate.setOnClickListener { showDatePickerDialog() }
+        binding.btnSaveTask.setOnClickListener { saveOrUpdateTask() }
+        binding.btnCancel.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
+    }
 
-        binding.btnSaveTask.setOnClickListener {
-            saveOrUpdateTask()
-        }
+    private fun setupViewModel() {
+        val database = AppDatabaseProvider.getDatabase(requireContext())
+        val taskDao = database.taskDao()
+        val repository = TaskRepository(taskDao)
+        val factory = TaskViewModelFactory(repository)
 
-        binding.btnCancel.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
+        viewModel = ViewModelProvider(requireActivity(), factory)[TaskViewModel::class.java]
     }
 
     private fun setupPrioritySpinner() {
@@ -81,22 +79,19 @@ class AddEditTaskFragment : Fragment() {
         binding.spinnerPriority.adapter = adapter
     }
 
-
     private fun loadTask(taskId: Int) {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.getTaskById(taskId).collect { task ->
-                    if (task != null) {
-                        currentTask = task
-                        populateUI(task)
-                    } else {
-                        Toast.makeText(requireContext(), "Task not found", Toast.LENGTH_SHORT).show()
-                        requireActivity().onBackPressedDispatcher.onBackPressed()
-                    }
-                }
+            val task = viewModel.getTaskByIdOnce(taskId)
+            if (task != null) {
+                currentTask = task
+                populateUI(task)
+            } else {
+                Toast.makeText(requireContext(), "Task ID: $taskId not found", Toast.LENGTH_SHORT).show()
+                requireActivity().onBackPressedDispatcher.onBackPressed()
             }
         }
     }
+
 
     private fun populateUI(task: Task) {
         binding.etTaskTitle.setText(task.title)
@@ -111,9 +106,7 @@ class AddEditTaskFragment : Fragment() {
 
     private fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
-        if (selectedDueDate != null) {
-            calendar.timeInMillis = selectedDueDate!!
-        }
+        selectedDueDate?.let { calendar.timeInMillis = it }
 
         val datePickerDialog = DatePickerDialog(
             requireContext(),
@@ -140,7 +133,6 @@ class AddEditTaskFragment : Fragment() {
         val priority = binding.spinnerPriority.selectedItemPosition
 
         if (currentTask == null) {
-            // Add new task
             val newTask = Task(
                 id = 0,
                 title = title,
@@ -151,12 +143,10 @@ class AddEditTaskFragment : Fragment() {
             viewModel.insert(newTask, requireContext())
             Toast.makeText(requireContext(), "Task added", Toast.LENGTH_SHORT).show()
         } else {
-            // Update existing task
             val updatedTask = currentTask!!.copy(
                 title = title,
                 priority = priority,
-                dueDate = selectedDueDate,
-                // keep isCompleted state unchanged, or add checkbox to allow editing
+                dueDate = selectedDueDate
             )
             viewModel.update(updatedTask, requireContext())
             Toast.makeText(requireContext(), "Task updated", Toast.LENGTH_SHORT).show()

@@ -24,20 +24,10 @@ class TaskViewModel(
     private val _currentTask = MutableStateFlow<Task?>(null)
     val currentTask: StateFlow<Task?> = _currentTask.asStateFlow()
 
-    fun getTaskById(id: Int): StateFlow<Task?> {
-        return repository.getTaskById(id)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+    suspend fun getTaskByIdOnce(id: Int): Task? {
+        return repository.getTaskByIdOnce(id)
     }
 
-
-    fun getTasksByPriority(priority: Int): StateFlow<List<Task>> {
-        return repository.getTasksByPriority(priority)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList()
-            )
-    }
 
     fun insert(task: Task, context: Context) {
         viewModelScope.launch {
@@ -63,5 +53,12 @@ class TaskViewModel(
             }
         }
     }
+
+    fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            repository.delete(task)
+        }
+    }
+
 
 }

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TaskDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(task: Task)
 
     @Update
@@ -20,7 +20,7 @@ interface TaskDao {
     fun getAllTasks(): Flow<List<Task>> // Changed to Flow
 
     @Query("SELECT * FROM task_table WHERE id = :id")
-    fun getTaskById(id: Int): Flow<Task>
+    suspend fun getTaskByIdOnce(id: Int): Task?
 
     @Query("SELECT * FROM task_table WHERE priority = :priority ORDER BY dueDate ASC")
     fun getTasksByPriority(priority: Int): Flow<List<Task>>

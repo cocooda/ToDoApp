@@ -6,19 +6,15 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import com.example.todoapp.data.model.Task
 import com.example.todoapp.data.repository.TaskRepository
 import com.example.todoapp.data.repository.TaskViewModelFactory
@@ -29,7 +25,9 @@ import com.example.todoapp.di.AppDatabaseProvider
 import com.example.todoapp.ui.common.TaskAdapter
 import com.example.todoapp.viewmodel.TaskViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import androidx.recyclerview.widget.RecyclerView
 
 @AndroidEntryPoint
 class TaskListFragment : Fragment() {
@@ -38,9 +36,10 @@ class TaskListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var adapter: TaskAdapter
-
     private lateinit var viewModel: TaskViewModel
-    private var filteredList = arrayListOf<Task>()
+
+    // This list holds the tasks currently displayed (filtered/searched/sorted)
+    private var currentDisplayedTasks = listOf<Task>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,203 +53,160 @@ class TaskListFragment : Fragment() {
         setupViewModel()
         setupRecyclerView()
         observeTasks()
-        setupFab()
+        setupUI()
     }
 
     private fun setupViewModel() {
         val database = AppDatabaseProvider.getDatabase(requireContext())
-        val taskDao = database.taskDao()
-        val repository = TaskRepository(taskDao)
+        val repository = TaskRepository(database.taskDao())
         val factory = TaskViewModelFactory(repository)
-
-        viewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity(), factory)[TaskViewModel::class.java]
     }
 
-    private val sampleTasks = listOf(
-        Task(id = 1, title = "Do homework", priority = 0, isCompleted = false, dueDate = System.currentTimeMillis()),
-        Task(id = 2, title = "AAA", priority = 0, isCompleted = false, dueDate = null),
-        Task(id = 3, title = "BBB", priority = 0, isCompleted = false, dueDate = null),
-        Task(id = 4, title = "CCCC", priority = 1, isCompleted = false, dueDate = null),
-        Task(id = 5, title = "DDD", priority = 1, isCompleted = false, dueDate = null),
-        Task(id = 6, title = "EEE", priority = 1, isCompleted = false, dueDate = null),
-        Task(id = 7, title = "ffff", priority = 2, isCompleted = false, dueDate = null),
-        Task(id = 8, title = "gggg", priority = 2, isCompleted = false, dueDate = null),
-        Task(id = 9, title = "Read a book", priority = 2, isCompleted = true, dueDate = System.currentTimeMillis())
-    )
-
     private fun setupRecyclerView() {
-        adapter = TaskAdapter{}
+        adapter = TaskAdapter { task ->
+            val action = TaskListFragmentDirections.actionTaskListFragmentToAddEditFragment(task.id)
+            findNavController().navigate(action)
+        }
         binding.recyclerViewTasks.adapter = adapter
-        adapter.submitList(sampleTasks)
+
+        setupSwipeToDelete()
+    }
+
+    private fun setupSwipeToDelete() {
+        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false // no move support
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.bindingAdapterPosition
+                val taskToDelete = adapter.currentList[position]
+                // Ask ViewModel to delete
+                viewModel.deleteTask(taskToDelete)
+            }
+        }
+        ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(binding.recyclerViewTasks)
     }
 
     private fun observeTasks() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 viewModel.allTasks.collect { tasks ->
-                    //adapter.submitList(tasks)
+                    currentDisplayedTasks = tasks
+                    adapter.submitList(currentDisplayedTasks)
                 }
             }
         }
     }
 
-    private fun setupFab() {
+    private fun setupUI() {
         binding.fabAddTask.setOnClickListener {
             val action = TaskListFragmentDirections.actionTaskListFragmentToAddEditFragment()
             findNavController().navigate(action)
-
         }
 
-        binding.apply {
-            ivSort.setOnClickListener {
-                showPopupMenuSort(ivSort)
-            }
-
-            ivFilter.setOnClickListener {
-                showPopupMenuFilter(ivFilter)
-            }
-
-            edtInputSearch.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    filterWithSearch(s.toString().trim())
-                }
-
-                override fun afterTextChanged(s: Editable?) {
-                }
-            })
-
+        binding.ivSort.setOnClickListener {
+            showPopupMenuSort(it)
         }
+
+        binding.ivFilter.setOnClickListener {
+            showPopupMenuFilter(it)
+        }
+
+        binding.edtInputSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterWithSearch(s.toString().trim())
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
     }
 
     private fun filterWithSearch(query: String) {
-        filteredList.clear()
-        if (query.isEmpty()) {
-            filteredList.addAll(sampleTasks)
+        val filtered = if (query.isEmpty()) {
+            currentDisplayedTasks
         } else {
-            val lowerCaseQuery = query.lowercase()
-            for (item in sampleTasks) {
-                if (item.title?.lowercase()?.contains(lowerCaseQuery) == true) {
-                    filteredList.add(item)
-                }
+            currentDisplayedTasks.filter {
+                it.title?.contains(query, ignoreCase = true) == true
             }
         }
-        adapter.submitList(filteredList.toMutableList())
+        adapter.submitList(filtered)
     }
 
-    private fun showPopupMenuSort(view: View) {
-        val layoutInflater = LayoutInflater.from(requireContext())
-        val binding1 = LayoutMenuSortBinding.inflate(layoutInflater)
-        val popupMenu = PopupWindow(requireContext())
-        popupMenu.contentView = binding1.root
-        popupMenu.width = LinearLayout.LayoutParams.WRAP_CONTENT
-        popupMenu.height = LinearLayout.LayoutParams.WRAP_CONTENT
-        popupMenu.isFocusable = true
-        popupMenu.isOutsideTouchable = true
-        popupMenu.elevation = 100f
+    private fun showPopupMenuSort(anchor: View) {
+        val popupBinding = LayoutMenuSortBinding.inflate(LayoutInflater.from(requireContext()))
+        val popup = PopupWindow(popupBinding.root, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+        popup.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        popup.elevation = 100f
 
-        popupMenu.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-        // Đo kích thước của PopupWindow để tính toán chiều cao cần thiết
-        binding1.root.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-        val popupHeight = binding1.root.measuredHeight
-
-        // Lấy vị trí của view gốc trên màn hình
-        val location = IntArray(2)
-        view.getLocationOnScreen(location)
-        val yPos = location[1] + view.height // Vị trí y của view gốc
-        val screenHeight = Resources.getSystem().displayMetrics.heightPixels
-        // Kiểm tra nếu không gian phía dưới không đủ để hiển thị toàn bộ PopupWindow
-        if (yPos + popupHeight > screenHeight) {
-            // Hiển thị PopupWindow phía trên view gốc nếu không đủ không gian bên dưới
-            popupMenu.showAsDropDown(view, -350, -(popupHeight + view.height), Gravity.NO_GRAVITY)
-        } else {
-            // Hiển thị PopupWindow phía dưới view gốc nếu đủ không gian
-            popupMenu.showAsDropDown(view, -350, 30, Gravity.NO_GRAVITY)
+        popupBinding.lnAZ.setOnClickListener {
+            val sorted = currentDisplayedTasks.sortedBy { it.title }
+            adapter.submitList(sorted)
+            popup.dismiss()
         }
 
-        binding1.lnAZ.setOnClickListener {
-            val list = sampleTasks.sortedBy { it.title }
-            adapter.submitList(list.toList())
-            popupMenu.dismiss()
+        popupBinding.lnZA.setOnClickListener {
+            val sorted = currentDisplayedTasks.sortedByDescending { it.title }
+            adapter.submitList(sorted)
+            popup.dismiss()
         }
 
-        binding1.lnZA.setOnClickListener {
-            val list = sampleTasks.sortedByDescending { it.title }
-            adapter.submitList(list.toList())
-            popupMenu.dismiss()
-        }
-
-        popupMenu.showAsDropDown(view, -350, 30, Gravity.NO_GRAVITY)
+        showSmartPopup(popup, anchor)
     }
 
-    private fun showPopupMenuFilter(view: View) {
-        val layoutInflater = LayoutInflater.from(requireContext())
-        val binding1 = LayoutMenuFilterBinding.inflate(layoutInflater)
-        val popupMenu = PopupWindow(requireContext())
-        popupMenu.contentView = binding1.root
-        popupMenu.width = LinearLayout.LayoutParams.WRAP_CONTENT
-        popupMenu.height = LinearLayout.LayoutParams.WRAP_CONTENT
-        popupMenu.isFocusable = true
-        popupMenu.isOutsideTouchable = true
-        popupMenu.elevation = 100f
+    private fun showPopupMenuFilter(anchor: View) {
+        val popupBinding = LayoutMenuFilterBinding.inflate(LayoutInflater.from(requireContext()))
+        val popup = PopupWindow(popupBinding.root, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true)
+        popup.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        popup.elevation = 100f
 
-        popupMenu.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        popupBinding.lnAll.setOnClickListener {
+            adapter.submitList(currentDisplayedTasks)
+            popup.dismiss()
+        }
 
-        // Đo kích thước của PopupWindow để tính toán chiều cao cần thiết
-        binding1.root.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-        val popupHeight = binding1.root.measuredHeight
+        popupBinding.lnLow.setOnClickListener {
+            val filtered = currentDisplayedTasks.filter { it.priority == 0 }
+            adapter.submitList(filtered)
+            popup.dismiss()
+        }
 
-        // Lấy vị trí của view gốc trên màn hình
+        popupBinding.lnMedium.setOnClickListener {
+            val filtered = currentDisplayedTasks.filter { it.priority == 1 }
+            adapter.submitList(filtered)
+            popup.dismiss()
+        }
+
+        popupBinding.lnHigh.setOnClickListener {
+            val filtered = currentDisplayedTasks.filter { it.priority == 2 }
+            adapter.submitList(filtered)
+            popup.dismiss()
+        }
+
+        showSmartPopup(popup, anchor)
+    }
+
+    private fun showSmartPopup(popup: PopupWindow, anchor: View) {
         val location = IntArray(2)
-        view.getLocationOnScreen(location)
-        val yPos = location[1] + view.height // Vị trí y của view gốc
+        anchor.getLocationOnScreen(location)
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels
-        // Kiểm tra nếu không gian phía dưới không đủ để hiển thị toàn bộ PopupWindow
-        if (yPos + popupHeight > screenHeight) {
-            // Hiển thị PopupWindow phía trên view gốc nếu không đủ không gian bên dưới
-            popupMenu.showAsDropDown(view, -350, -(popupHeight + view.height), Gravity.NO_GRAVITY)
+
+        anchor.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+        val popupHeight = popup.contentView.measuredHeight
+
+        if (location[1] + anchor.height + popupHeight > screenHeight) {
+            popup.showAsDropDown(anchor, -350, -(popupHeight + anchor.height), Gravity.NO_GRAVITY)
         } else {
-            // Hiển thị PopupWindow phía dưới view gốc nếu đủ không gian
-            popupMenu.showAsDropDown(view, -350, 30, Gravity.NO_GRAVITY)
+            popup.showAsDropDown(anchor, -350, 30, Gravity.NO_GRAVITY)
         }
-
-        binding1.lnAll.setOnClickListener {
-            val list = sampleTasks
-            adapter.submitList(list.toList())
-            popupMenu.dismiss()
-        }
-
-        binding1.lnLow.setOnClickListener {
-            val list = sampleTasks.filter { it.priority == 0 }
-            adapter.submitList(list.toList())
-            popupMenu.dismiss()
-        }
-
-        binding1.lnMedium.setOnClickListener {
-            val list = sampleTasks.filter { it.priority == 1 }
-            adapter.submitList(list.toList())
-            popupMenu.dismiss()
-        }
-
-        binding1.lnHigh.setOnClickListener {
-            val list = sampleTasks.filter { it.priority == 2 }
-            adapter.submitList(list.toList())
-            popupMenu.dismiss()
-        }
-
-        popupMenu.showAsDropDown(view, -350, 30, Gravity.NO_GRAVITY)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
 }

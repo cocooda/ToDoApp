@@ -3,6 +3,7 @@ package com.example.todoapp.ui.common
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -13,7 +14,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class TaskAdapter(
-    private val onItemClick: (Task) -> Unit // <-- New constructor parameter
+    private val onItemClick: (Task) -> Unit,     // Click for edit
 ) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(DiffCallback()) {
 
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -39,9 +40,11 @@ class TaskAdapter(
                 else -> "Priority: Unknown"
             }
 
+            // Click for edit
             itemView.setOnClickListener {
-                onItemClick(task) // <-- Trigger click callback
+                onItemClick(task)
             }
+
         }
     }
 
@@ -52,7 +55,7 @@ class TaskAdapter(
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        holder.bind(getItem(position)) // <-- Call bind with task
+        holder.bind(getItem(position))
     }
 
     class DiffCallback : DiffUtil.ItemCallback<Task>() {
