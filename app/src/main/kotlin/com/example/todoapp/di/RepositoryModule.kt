@@ -1,7 +1,7 @@
 package com.example.todoapp.di
 
 import com.example.todoapp.data.db.TaskDao
-import com.example.todoapp.repository.TaskRepository
+import com.example.todoapp.data.repository.TaskRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

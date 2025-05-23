@@ -79,7 +79,7 @@ class TaskListFragment : Fragment() {
     )
 
     private fun setupRecyclerView() {
-        adapter = TaskAdapter()
+        adapter = TaskAdapter{}
         binding.recyclerViewTasks.adapter = adapter
         adapter.submitList(sampleTasks)
     }
