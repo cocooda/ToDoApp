@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepository
@@ -67,15 +68,4 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun update(task: Task) {
-        viewModelScope.launch {
-            repository.update(task)
-        }
-    }
-
-    fun delete(task: Task) {
-        viewModelScope.launch {
-            repository.delete(task)
-        }
-    }
 }

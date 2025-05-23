@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android") version "2.44" apply false
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -76,13 +77,15 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.fragment)
 
-   // RecyclerView
+    // RecyclerView
     implementation(libs.androidx.recyclerview.v140)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.appcompat)
 
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    //Nav
+    implementation(libs.material)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 }

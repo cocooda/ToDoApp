@@ -98,8 +98,6 @@ class AddEditTaskFragment : Fragment() {
         }
     }
 
-
-
     private fun populateUI(task: Task) {
         binding.etTaskTitle.setText(task.title)
         binding.spinnerPriority.setSelection(task.priority)
