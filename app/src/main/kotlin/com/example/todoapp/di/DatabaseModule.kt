@@ -13,7 +13,7 @@ import javax.inject.Singleton
 
 @Suppress("unused")
 @Module
-@InstallIn(SingletonComponent::class) // This makes the dependencies live for app lifecycle
+@InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
     @Provides

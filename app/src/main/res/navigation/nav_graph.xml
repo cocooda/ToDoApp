@@ -14,4 +14,13 @@
             android:defaultValue="-1" />
     </fragment>
 
+    <fragment
+        android:id="@+id/taskListFragment"
+        android:name="com.example.todoapp.ui.tasklist.TaskListFragment"
+        android:label="Task List">
+        <action
+            android:id="@+id/action_taskListFragment_to_addEditFragment"
+            app:destination="@id/addEditFragment" />
+    </fragment>
+
 </navigation>
