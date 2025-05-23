@@ -17,7 +17,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.example.todoapp.data.model.Task
 import com.example.todoapp.data.repository.TaskRepository
-import com.example.todoapp.data.repository.TaskViewModelFactory
+import com.example.todoapp.viewmodel.TaskViewModelFactory
 import com.example.todoapp.databinding.FragmentTaskListBinding
 import com.example.todoapp.databinding.LayoutMenuFilterBinding
 import com.example.todoapp.databinding.LayoutMenuSortBinding

@@ -43,7 +43,7 @@
                 android:imeOptions="actionDone"
                 android:background="#F4F4F4"
                 android:inputType="text"
-                android:hint="@string/search_your_name"
+                android:hint="@string/search_your_task"
                 android:includeFontPadding="false"
                 android:textColor="@color/black"
                 android:textColorHint="#A9AEB8"

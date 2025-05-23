@@ -1,15 +1,15 @@
 <resources>
     <string name="app_name">ToDoApp</string>
-    <string name="add_task_title">Thêm Task Mới</string>
-    <string name="add_task_subtitle">Vui lòng điền thông tin task cần thêm</string>
-    <string name="task_title_label">Tiêu đề task:</string>
-    <string name="task_title_hint">Nhập tiêu đề task</string>
-    <string name="priority_label">Mức độ ưu tiên:</string>
-    <string name="due_date_label">Ngày hạn (tùy chọn):</string>
-    <string name="select_date_button">Chọn ngày</string>
-    <string name="no_due_date">Chưa có ngày hạn</string>
-    <string name="save_task_button">Lưu Task</string>
-    <string name="cancel_button">Hủy</string>
+    <string name="add_task_title">New Task</string>
+    <string name="add_task_subtitle">Enter task information</string>
+    <string name="task_title_label">Title</string>
+    <string name="task_title_hint">Please input title</string>
+    <string name="priority_label">Priority:</string>
+    <string name="due_date_label">Date (Optional):</string>
+    <string name="select_date_button">Pick a date</string>
+    <string name="no_due_date">No due date</string>
+    <string name="save_task_button">Save Task</string>
+    <string name="cancel_button">Cancel</string>
     <string name="add_task">Add Task</string>
     <string name="update_task">Update Task</string>
     <string name="due_no_date">No due date</string>
@@ -20,7 +20,7 @@
     <string name="task_not_found">Task not found</string>
     <string name="list_of_tasks">List of tasks</string>
     <string name="add_task_button">Thêm công việc</string>
-    <string name="search_your_name">Search your name</string>
+    <string name="search_your_task">Search your task</string>
     <string name="low">Low</string>
     <string name="medium">Medium</string>
     <string name="high">High</string>

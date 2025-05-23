@@ -1,6 +1,7 @@
 package com.example.todoapp.ui.addedit
 
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,18 +9,16 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
 import com.example.todoapp.R
 import com.example.todoapp.data.model.Task
 import com.example.todoapp.data.repository.TaskRepository
-import com.example.todoapp.data.repository.TaskViewModelFactory
 import com.example.todoapp.databinding.FragmentAddEditTaskBinding
 import com.example.todoapp.di.AppDatabaseProvider
 import com.example.todoapp.viewmodel.TaskViewModel
+import com.example.todoapp.viewmodel.TaskViewModelFactory
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,9 +32,12 @@ class AddEditTaskFragment : Fragment() {
 
     private var selectedDueDate: Long? = null
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private var selectedHour: Int = 9
+    private var selectedMinute: Int = 0
+
     private var currentTask: Task? = null
 
-    // Safe Args property
     private val args: AddEditTaskFragmentArgs by navArgs()
 
     override fun onCreateView(
@@ -60,7 +62,9 @@ class AddEditTaskFragment : Fragment() {
 
         binding.btnSelectDate.setOnClickListener { showDatePickerDialog() }
         binding.btnSaveTask.setOnClickListener { saveOrUpdateTask() }
-        binding.btnCancel.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
+        binding.btnCancel.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
     }
 
     private fun setupViewModel() {
@@ -92,13 +96,18 @@ class AddEditTaskFragment : Fragment() {
         }
     }
 
-
     private fun populateUI(task: Task) {
         binding.etTaskTitle.setText(task.title)
         binding.spinnerPriority.setSelection(task.priority)
         selectedDueDate = task.dueDate
         selectedDueDate?.let {
-            binding.tvSelectedDate.text = getString(R.string.due_label, dateFormat.format(Date(it)))
+            val date = Date(it)
+            val calendar = Calendar.getInstance().apply { timeInMillis = it }
+            selectedHour = calendar.get(Calendar.HOUR_OF_DAY)
+            selectedMinute = calendar.get(Calendar.MINUTE)
+            val formattedDate = dateFormat.format(date)
+            val formattedTime = timeFormat.format(date)
+            binding.tvSelectedDate.text = getString(R.string.due_label, "$formattedDate at $formattedTime")
         } ?: run {
             binding.tvSelectedDate.text = getString(R.string.due_no_date)
         }
@@ -111,9 +120,7 @@ class AddEditTaskFragment : Fragment() {
         val datePickerDialog = DatePickerDialog(
             requireContext(),
             { _, year, month, dayOfMonth ->
-                calendar.set(year, month, dayOfMonth)
-                selectedDueDate = calendar.timeInMillis
-                binding.tvSelectedDate.text = getString(R.string.due_label, dateFormat.format(Date(selectedDueDate!!)))
+                showTimePickerDialog(year, month, dayOfMonth)
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -121,6 +128,31 @@ class AddEditTaskFragment : Fragment() {
         )
         datePickerDialog.datePicker.minDate = System.currentTimeMillis()
         datePickerDialog.show()
+    }
+
+    private fun showTimePickerDialog(year: Int, month: Int, day: Int) {
+        val calendar = Calendar.getInstance()
+
+        val timePickerDialog = TimePickerDialog(
+            requireContext(),
+            { _, hourOfDay, minute ->
+                selectedHour = hourOfDay
+                selectedMinute = minute
+
+                calendar.set(year, month, day, hourOfDay, minute, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+
+                selectedDueDate = calendar.timeInMillis
+
+                val formattedDate = dateFormat.format(calendar.time)
+                val formattedTime = timeFormat.format(calendar.time)
+                binding.tvSelectedDate.text = getString(R.string.due_label, "$formattedDate at $formattedTime")
+            },
+            selectedHour,
+            selectedMinute,
+            true
+        )
+        timePickerDialog.show()
     }
 
     private fun saveOrUpdateTask() {

@@ -1,8 +1,8 @@
-package com.example.todoapp.data.repository
+package com.example.todoapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.todoapp.viewmodel.TaskViewModel
+import com.example.todoapp.data.repository.TaskRepository
 
 class TaskViewModelFactory(
     private val repository: TaskRepository
