@@ -25,9 +25,10 @@ import com.example.todoapp.di.AppDatabaseProvider
 import com.example.todoapp.ui.common.TaskAdapter
 import com.example.todoapp.viewmodel.TaskViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+
 
 @AndroidEntryPoint
 class TaskListFragment : Fragment() {
@@ -53,6 +54,7 @@ class TaskListFragment : Fragment() {
         setupViewModel()
         setupRecyclerView()
         observeTasks()
+
         setupUI()
     }
 
@@ -86,6 +88,16 @@ class TaskListFragment : Fragment() {
                 val taskToDelete = adapter.currentList[position]
                 // Ask ViewModel to delete
                 viewModel.deleteTask(taskToDelete)
+                Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
+                    .setAction("Undo") {
+                        viewModel.undoDelete(taskToDelete)
+                    }
+                    .setActionTextColor(Color.BLACK)
+                    .also { snackbar ->
+                        snackbar.view.setBackgroundColor(Color.WHITE)  // Set your desired color here
+                    }
+                    .show()
+
             }
         }
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(binding.recyclerViewTasks)

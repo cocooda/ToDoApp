@@ -21,9 +21,6 @@ class TaskViewModel(
             initialValue = emptyList()
         )
 
-    private val _currentTask = MutableStateFlow<Task?>(null)
-    val currentTask: StateFlow<Task?> = _currentTask.asStateFlow()
-
     suspend fun getTaskByIdOnce(id: Int): Task? {
         return repository.getTaskByIdOnce(id)
     }
@@ -41,6 +38,13 @@ class TaskViewModel(
             }
         }
     }
+
+    fun undoDelete(task: Task) {
+        viewModelScope.launch {
+            repository.insert(task)
+        }
+    }
+
 
     fun update(task: Task, context: Context) {
         viewModelScope.launch {
